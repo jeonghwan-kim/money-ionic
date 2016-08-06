@@ -1,0 +1,13 @@
+<ion-view view-title="월별지출">
+  <ion-content>
+    <ion-list>
+      <ion-item class="item-icon-right"
+                ng-repeat="item in data"
+                href="#/tab/main/{{item.year}}-{{item.month}}">
+        <h2>{{item.year}}-{{item.month}}</h2>
+        <p>{{item.expense | currency}}</p>
+        <i class="icon ion-chevron-right icon-accessory"></i>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>
