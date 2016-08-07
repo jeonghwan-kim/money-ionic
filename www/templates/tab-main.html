@@ -1,12 +1,12 @@
-<ion-view view-title="월별지출">
+<ion-view view-title="Expenses">
   <ion-content>
     <ion-list>
-      <ion-item class="item-icon-right"
-                ng-repeat="item in data"
-                href="#/tab/main/{{item.year}}-{{item.month}}">
-        <h2>{{item.year}}-{{item.month}}</h2>
-        <p>{{item.expense | currency}}</p>
-        <i class="icon ion-chevron-right icon-accessory"></i>
+      <ion-item class="item-icon-right" ng-repeat="e in expenses | orderBy:'-date'">
+        <div>{{e.text }}</div>
+        <div>{{e.amount | number}}</div>
+        <div>{{e.date | date}}</div>
+        <ion-option-button class="button-positive" ng-click="goEdit(e)">Edit</ion-option-button>
+        <ion-option-button class="button-assertive" ng-click="remove(e)">Delete</ion-option-button>
       </ion-item>
     </ion-list>
   </ion-content>

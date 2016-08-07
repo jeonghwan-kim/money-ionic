@@ -40,4 +40,108 @@ angular.module('starter.services', [])
       angular.copy(data, data.splice(idx, 1));
     }
   }
-});
+})
+
+.factory('BackendApi', function ($http, Auth) {
+  // var host = 'http://localhost:9000/api';
+  var host = '';
+
+  return {
+    register: function (account) {
+      console.log(account);
+      return $http({
+        method: 'post',
+        url: host + '/api/users',
+        data: account
+      });
+    },
+
+    login: function (account) {
+      return $http({
+        method: 'post',
+        url: host + '/auth/local',
+        data: account
+      });
+    },
+
+    queryExpenses: function (year, month) {
+      return $http({
+        method: 'get',
+        url: host + '/api/expenses?year=' + year + '&month=' + month,
+        headers: {
+          Authorization: 'Bearer ' + Auth.getAccessToken()
+        }
+      });
+    },
+
+    create: function (expense) {
+      console.log(expense)
+      return $http({
+        method: 'post',
+        url: host + '/api/expenses',
+        data: expense
+      });
+    }
+  };
+})
+
+.factory('Auth', function () {
+  var accessToken;
+
+  return {
+    getAccessToken: function (){
+      return accessToken;
+    },
+    setAccessToken: function (token) {
+      accessToken = token;
+    }
+  };
+})
+
+.factory('Expense', function ($http) {
+  var storage = {
+    expenses: [],
+
+    get: function () {
+      return $http({
+        method: 'get',
+        url: '/api/expenses?year=2016&month=8',
+      }).then(function (res) {
+        storage.expenses = res.data;
+        return storage.expenses;
+      });
+    },
+
+    create: function (expense) {
+      return $http({
+        method: 'post',
+        url: '/api/expenses',
+        data: expense,
+      }).then(function (res) {
+        storage.expenses.push(res.data);
+        return storage.expenses;
+      });
+    },
+
+    update: function (expense) {
+      return $http({
+        method: 'put',
+        url: '/api/expenses/' + expense.id,
+        data: expense,
+      });
+    },
+
+    remove: function (expense) {
+      return $http({
+        method: 'delete',
+        url: '/api/expenses/' + expense.id
+      }).then(function (res) {
+        console.log(res);
+        storage.expenses.splice(storage.expenses.indexOf(expense), 1);
+      });
+    }
+  };
+
+  return storage;
+
+})

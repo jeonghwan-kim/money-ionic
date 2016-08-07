@@ -5,7 +5,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
+angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', 'ngCookies'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
@@ -23,7 +23,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
   });
 })
 
-.config(function($stateProvider, $urlRouterProvider) {
+.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
 
   // Ionic uses AngularUI Router which uses the concept of states
   // Learn more here: https://github.com/angular-ui/ui-router
@@ -31,8 +31,22 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
   // Each state's controller can be found in controllers.js
   $stateProvider
 
+
+
+  .state('login', {
+    url: '/login',
+    templateUrl: 'templates/login.html',
+    controller: 'LoginCtrl'
+  })
+  .state('register', {
+    url: '/register',
+    templateUrl: 'templates/register.html',
+    controller: 'RegisterCtrl'
+  })
+
+
   // setup an abstract state for the tabs directive
-    .state('tab', {
+  .state('tab', {
     url: '/tab',
     abstract: true,
     templateUrl: 'templates/tabs.html'
@@ -40,44 +54,69 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
   // Each tab has its own nav history stack:
 
-  .state('tab.main', {
-    url: '/main',
-    views: {
-      'tab-main': {
-        templateUrl: 'templates/tab-main.html',
-        controller: 'MainCtrl'
+    .state('tab.main', {
+      url: '/main',
+      views: {
+        'tab-main': {
+          templateUrl: 'templates/tab-main.html',
+          controller: 'MainCtrl',
+        }
       }
-    }
-  })
-  .state('tab.main-detail', {
-    url: '/main/:yearMonth',
-    views: {
-      'tab-main': {
-        templateUrl: 'templates/main-detail.html',
-        controller: 'MainDetailCtrl'
+    })
+    .state('tab.edit', {
+      url: '/edit',
+      views: {
+        'tab-main': {
+          templateUrl: 'templates/tab-edit.html',
+          controller: 'MainEditCtrl'
+        }
+      },
+      params: {expense: null}
+    })
+    .state('tab.add', {
+      url: '/add',
+      views: {
+        'tab-add': {
+          templateUrl: 'templates/tab-add.html',
+          controller: 'AddCtrl'
+        }
       }
-    }
-  })
-  .state('tab.add', {
-    url: '/add',
-    views: {
-      'tab-add': {
-        templateUrl: 'templates/tab-add.html',
-        controller: 'AddCtrl'
+    })
+    .state('tab.account', {
+      url: '/account',
+      views: {
+        'tab-account': {
+          templateUrl: 'templates/tab-account.html',
+          controller: 'AccountCtrl'
+        }
       }
-    }
-  })
-  .state('tab.account', {
-    url: '/account',
-    views: {
-      'tab-account': {
-        templateUrl: 'templates/tab-account.html',
-        controller: 'AccountCtrl'
-      }
-    }
-  });
+    });
+
 
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/tab/main');
+  $urlRouterProvider.otherwise('/login');
 
+  $httpProvider.interceptors.push('authInterceptor');
+})
+
+.factory('authInterceptor', function ($q, $location, $cookies) {
+  return {
+    request: function (config) {
+      config.headers = config.headers || {};
+      if ($cookies.get('token')) {
+        config.headers.Authorization = 'Bearer ' + $cookies.get('token');
+      }
+      return config;
+    },
+    responseError: function (response) {
+      console.log(response)
+      if (response.status === 401 || response.status === 400) {
+        $location.path('/login')
+        $q.reject(response);
+      } else {
+        $q.reject(response);
+      }
+    }
+  }
 });
+
